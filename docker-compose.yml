@@ -1,0 +1,15 @@
+services:
+  db:
+    build:
+      context: ./DB
+    # 自動で起動する
+    restart: always
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./DB/basic_db:/src
+    environment:
+      - MSSQL_SA_PASSWORD=P@sswordP@ssword
+      - DB_NAME=basic_db
+      - PROJECT_PATH=/src/basic_db.sqlproj
+      - DACPAC_PATH=/src/bin/debug/basic_db.dacpac
