@@ -13,3 +13,22 @@ services:
       - DB_NAME=basic_db
       - PROJECT_PATH=/src/basic_db.sqlproj
       - DACPAC_PATH=/src/bin/debug/basic_db.dacpac
+  api:
+    build:
+      context: ./API
+      # dotnet watchはdotnet/sdk:8.0に含まれるので、ビルド環境ステージのイメージを利用する
+      target: build-env
+    volumes:
+      - ./API:/api_src/
+      # objは名前付きボリュームにする。こうすることでコンテナ内でdotnet restoreする際にこっちに影響を与えなくなる。
+      - ignores:/api_src/Server/obj/
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "db"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
+    command: dotnet watch run --project /api_src/Server/Server.csproj --launch-profile http
+volumes:
+  ignores:
