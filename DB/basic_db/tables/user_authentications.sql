@@ -1,7 +1,7 @@
 CREATE TABLE [app].[user_authentications]
 (
     [id] int PRIMARY KEY IDENTITY(1,1) NOT NULL,
-    [user_id] int NOT NULL,
+    [user_id] uniqueidentifier NOT NULL,
     [sign_in_id] nvarchar(100) UNIQUE NOT NULL,
     [password] nvarchar(128) NOT NULL,
     [refresh_token] nvarchar(128) DEFAULT NULL,

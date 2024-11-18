@@ -1,6 +1,6 @@
 CREATE TABLE [app].[users]
 (
-    [id] int PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    [id] uniqueidentifier PRIMARY KEY NOT NULL,
     [name] nvarchar(50) NOT NULL,
     [registered_at] datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
