@@ -29,6 +29,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
+      - PEPPER=pepper
+      - DB_CONNECTION_STR=Data Source=db, 1433;Initial Catalog=basic_db;User ID=sa;Password=P@sswordP@ssword;TrustServerCertificate=true;
     command: dotnet watch run --project /api_src/Server/Server.csproj --launch-profile http
 volumes:
   ignores:
