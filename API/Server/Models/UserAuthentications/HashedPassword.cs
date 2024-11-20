@@ -18,7 +18,7 @@ public record HashedPassword
     /// <param name="rawPassword">生パスワード</param>
     /// <param name="user">パスワードの所有者</param>
     /// <returns>ハッシュ化したパスワード</returns>
-    public static HashedPassword Create(IHasher hasher, RawPassword rawPassword, User user)
+    public static HashedPassword HashFromRawPassword(IHasher hasher, RawPassword rawPassword, User user)
     {
         // 生パスワードをハッシュ化する。
         return new(hasher.Generate(user, rawPassword));

@@ -49,7 +49,7 @@ public class UserUseCase(IUserRepository userRepository, IHasher hasher)
 
         // ユーザを作成し、DBに格納する。
         var user = User.CreateNew(userName);
-        var hashedPassword = HashedPassword.Create(_hasher, rawPassword, user);
+        var hashedPassword = HashedPassword.HashFromRawPassword(_hasher, rawPassword, user);
         var ok = await _userRepository.TryCreateUserAsync(user, signInId, hashedPassword);
         if (ok)
         {
