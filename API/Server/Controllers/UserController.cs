@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Server.UseCases;
 using Server.UseCases.Users;
 
@@ -15,6 +16,7 @@ public class UserController(ILogger<UserController> logger, UserUseCase userUseC
     public record RegisterParams(string Name, string SignInId, string Password);
     public record RegisterValidationResponse(bool UserNameOk, bool SignInIdOk, bool RawPasswordOk);
     [AllowAnonymous]
+    [EnableRateLimiting(Program.SIGN_RATE_LIMITER)]
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync(RegisterParams param)
     {
