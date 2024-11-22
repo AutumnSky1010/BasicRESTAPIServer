@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Server;
 using Server.Authentications;
 using Server.Databases;
+using Server.Models.UserAuthentications;
 using Server.UseCases.Users;
 
 internal class Program
@@ -22,6 +23,12 @@ internal class Program
 
         // カラム名のアンダースコアを無視する。こうすることでキャメルケースでもマップできる。
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+        // Hasherを登録
+        RegisterHasher(builder.Services);
+
+        // リポジトリを登録
+        RegisterRepositories(builder.Services);
 
         // ユースケースを登録
         RegisterUseCases(builder.Services);
@@ -69,16 +76,37 @@ internal class Program
     }
 
     /// <summary>
+    /// ハッシュ化処理を登録
+    /// </summary>
+    /// <param name="services">DIコンテナ</param>
+    private static void RegisterHasher(IServiceCollection services)
+    {
+        services
+            .AddSingleton<IHasher, HasherByPBKDF2>(services => new HasherByPBKDF2(ServerEnvironments.Get(VariableTypes.HasherPepper)));
+    }
+
+    /// <summary>
+    /// リポジトリを登録する
+    /// </summary>
+    /// <param name="services">DIコンテナ</param>
+    private static void RegisterRepositories(IServiceCollection services)
+    {
+        services
+            .AddSingleton<IUserRepository, UserRepository>(services => new UserRepository(services.GetRequiredService<ILogger<UserRepository>>(), ServerEnvironments.Get(VariableTypes.DBConnectionString)));
+    }
+
+    /// <summary>
     /// DIコンテナにユースケースを登録する。
     /// </summary>
     /// <param name="services">DIコンテナ</param>
     private static void RegisterUseCases(IServiceCollection services)
     {
-        services.AddSingleton(services =>
-        {
-            var userRepository = new UserRepository(services.GetRequiredService<ILogger<UserRepository>>(), ServerEnvironments.Get(VariableTypes.DBConnectionString));
-            var hasher = new HasherByPBKDF2(ServerEnvironments.Get(VariableTypes.HasherPepper));
-            return new UserUseCase(userRepository, hasher);
-        });
+        services
+            .AddSingleton(services =>
+            {
+                var userRepository = services.GetRequiredService<IUserRepository>();
+                var hasher = services.GetRequiredService<IHasher>();
+                return new UserUseCase(userRepository, hasher);
+            });
     }
 }
