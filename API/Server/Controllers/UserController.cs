@@ -16,7 +16,7 @@ public class UserController(ILogger<UserController> logger, UserUseCase userUseC
     public record RegisterParams(string Name, string SignInId, string Password);
     public record RegisterValidationResponse(bool UserNameOk, bool SignInIdOk, bool RawPasswordOk);
     [AllowAnonymous]
-    [EnableRateLimiting(Program.SIGN_RATE_LIMITER)]
+    [EnableRateLimiting(Program.REGISTER_USER_RATE_LIMITER)]
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync(RegisterParams param)
     {
