@@ -8,6 +8,8 @@ public record UserName
         Value = value;
     }
 
+    public static readonly UserName Empty = new("");
+
     public string Value { get; }
 
     /// <summary>

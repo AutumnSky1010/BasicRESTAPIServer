@@ -2,7 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Server.Models.Users;
 
-public readonly record struct UserId(Guid Value);
+public readonly record struct UserId(Guid Value)
+{
+    public static readonly UserId Empty = new(Guid.Empty);
+}
 
 public class User
 {
@@ -12,6 +15,8 @@ public class User
         Name = name;
         RegisteredAt = registeredAt;
     }
+
+    public static readonly User Unknown = new(UserId.Empty, UserName.Empty, DateTime.MinValue);
 
     public UserId Id { get; }
 
