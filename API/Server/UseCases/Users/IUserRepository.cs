@@ -13,4 +13,11 @@ public interface IUserRepository
     /// <param name="hashedPassword">ハッシュ化済みパスワード</param>
     /// <returns>成功時: true, 失敗時: false</returns>
     Task<bool> TryCreateUserAsync(User newUser, SignInId signInId, HashedPassword hashedPassword);
+
+    /// <summary>
+    /// ユーザIDからユーザを探す
+    /// </summary>
+    /// <param name="targetUserId"></param>
+    /// <returns>(成功したか、見つかったユーザ。失敗した場合はUnknownユーザ)</returns>
+    Task<(bool ok, User foundUser)> TryFindUserByIdAsync(UserId targetUserId);
 }
