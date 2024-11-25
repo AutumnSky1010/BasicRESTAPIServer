@@ -29,7 +29,7 @@ public class UserAuthenticationUseCase(IHasher hasher, IAccessTokenGenerator tok
 
         // サインインIDから登録されたユーザID、ハッシュ化済みパスワードを取得す
         // ここで失敗する場合はどちらかというとユーザ入力が原因であることが多いため、バリデーションエラーとする
-        var (isFoundAuthentication, userId, hashedPassword) = await _authRepository.TryFindAuthentication(signInId);
+        var (isFoundAuthentication, userId, storedPassword) = await _authRepository.TryFindAuthentication(signInId);
         if (!isFoundAuthentication)
         {
             return (ResultTypes.ValidationError, "");
@@ -43,7 +43,7 @@ public class UserAuthenticationUseCase(IHasher hasher, IAccessTokenGenerator tok
         }
 
         // パスワードの検証を行い、成功した場合はアクセストークンを返却する
-        if (hashedPassword.Verify(_hasher, rawPassword, user))
+        if (storedPassword.Verify(_hasher, rawPassword, user))
         {
             var accessToken = _tokenGenerator.Generate(userId);
             return (ResultTypes.Success, accessToken);
