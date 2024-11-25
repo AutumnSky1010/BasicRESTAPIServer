@@ -49,4 +49,26 @@ public class UserRepository(ILogger<UserRepository> logger, string connectionStr
             return false;
         }
     }
+
+    /// <summary>
+    /// ユーザIDからユーザを探す
+    /// </summary>
+    /// <param name="targetUserId">見つける対象のユーザID</param>
+    /// <returns>(成功したか、見つかったユーザ。失敗した場合はUnknownユーザ)</returns>
+    public async Task<(bool ok, User foundUser)> TryFindUserByIdAsync(UserId targetUserId)
+    {
+        using var connection = new SqlConnection(connectionString);
+        try
+        {
+            var userRow = await _userClient.ReadUserByIdAsync(connection, targetUserId.Value);
+            _ = UserName.TryCreate(userRow.Name, out var userName);
+            var user = User.CreateFrom(targetUserId, userName!, userRow.RegisteredAt);
+            return (true, user);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "ユーザ取得時にエラーが発生しました。");
+            return (false, User.Unknown);
+        }
+    }
 }

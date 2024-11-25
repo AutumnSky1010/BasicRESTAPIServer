@@ -33,4 +33,36 @@ public class UserAuthenticationsClient
             """;
         await connection.ExecuteAsync(authenticationQuery, authenticationParam, tx);
     }
+
+    public record UserAuthenticationRow(int Id, Guid UserId, string SignInId, string Password, string RefreshToken, DateTime RefreshTokenExpiration);
+    /// <summary>
+    /// サインインIDをキーとして読む
+    /// </summary>
+    /// <param name="connection">コネクション</param>
+    /// <param name="signInId">キーとなるサインインID</param>
+    /// <returns>見つかった認証情報</returns>
+    public async Task<UserAuthenticationRow> ReadBySignInIdAsync(SqlConnection connection, string signInId)
+    {
+        var param = new
+        {
+            signInId
+        };
+        var query = $"""
+                SELECT
+                    id,
+                    user_id,
+                    sign_in_id,
+                    password,
+                    refresh_token,
+                    refresh_token_expiration
+                FROM
+                    [app].[user_authentications] user_authentications
+                WHERE
+                    user_authentications.sign_in_id = @{nameof(param.signInId)}
+            """;
+
+        var row = await connection.QueryFirstAsync<UserAuthenticationRow>(query, param);
+
+        return row;
+    }
 }
