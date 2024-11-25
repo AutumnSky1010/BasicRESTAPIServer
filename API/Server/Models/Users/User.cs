@@ -30,7 +30,7 @@ public class User
     /// <param name="id">ユーザID</param>
     /// <param name="userName">ユーザ名</param>
     /// <param name="registeredAt">登録日時</param>
-    /// <returns></returns>
+    /// <returns>既存の情報から作成したユーザ</returns>
     public static User CreateFrom(UserId id, UserName userName, DateTime registeredAt)
     {
         return new(id, userName, registeredAt);
