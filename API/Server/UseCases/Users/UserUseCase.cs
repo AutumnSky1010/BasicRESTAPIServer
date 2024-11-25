@@ -1,11 +1,14 @@
 ﻿using Server.Models.UserAuthentications;
 using Server.Models.Users;
+using Server.UseCases.UserAuthentications;
 
 namespace Server.UseCases.Users;
 
-public class UserUseCase(IUserRepository userRepository, IHasher hasher)
+public class UserUseCase(IUserRepository userRepository, IUserAuthenticationRepository authRepository, IHasher hasher)
 {
     private readonly IUserRepository _userRepository = userRepository;
+
+    private readonly IUserAuthenticationRepository _authRepository = authRepository;
 
     private readonly IHasher _hasher = hasher;
 
@@ -41,6 +44,14 @@ public class UserUseCase(IUserRepository userRepository, IHasher hasher)
         if (!RawPassword.TryCreate(rawPasswordValue, out var rawPassword))
         {
             var validationResult = new RegisterValidationResult(true, true, false);
+            return (ResultTypes.ValidationError, validationResult);
+        }
+
+        // サインインIDが既に登録されているかをチェックする
+        var (existsId, _, _) = await _authRepository.TryFindAuthentication(signInId);
+        if (existsId)
+        {
+            var validationResult = new RegisterValidationResult(true, false, true);
             return (ResultTypes.ValidationError, validationResult);
         }
 
