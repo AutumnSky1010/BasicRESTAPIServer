@@ -1,5 +1,10 @@
-using System.Threading.RateLimiting;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Server;
 using Server.Authentications;
 using Server.Databases;
@@ -11,16 +16,68 @@ internal class Program
 {
     public const string REGISTER_USER_RATE_LIMITER = "register";
 
+    public const string TOKEN_RATE_LIMITER = "token";
+
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers(
+            // デフォルトで認証が必要にする、
+            // https://qiita.com/mkuwan/items/bd5ff882108998d76dca
+            options => options.Filters.Add(
+                new AuthorizeFilter(
+                    new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                        .RequireAuthenticatedUser()
+                        .Build()
+                )
+            )
+        );
+        // ベアラートークン認証関連の登録
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = ServerEnvironments.Get(VariableTypes.JWTIssuer),
+                    ValidAudience = ServerEnvironments.Get(VariableTypes.JWTAudience),
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            ServerEnvironments.Get(VariableTypes.JWTKeyForAccessToken))),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(option =>
+        {
+            option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "JWTトークンを入力してください。",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+            option.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme {
+                        Reference = new OpenApiReference {
+                            Type=ReferenceType.SecurityScheme, Id="Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
 
         // カラム名のアンダースコアを無視する。こうすることでキャメルケースでもマップできる。
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -51,6 +108,9 @@ internal class Program
 
         app.UseHttpsRedirection();
 
+        // 認証
+        app.UseAuthentication();
+        // 認可
         app.UseAuthorization();
 
         app.MapControllers();
@@ -77,6 +137,12 @@ internal class Program
                 options.Window = TimeSpan.FromSeconds(60);
                 // リクエストのキューの容量
                 options.QueueLimit = 0;
+            })
+            .AddFixedWindowLimiter(TOKEN_RATE_LIMITER, options =>
+            {
+                options.PermitLimit = 3;
+                options.Window = TimeSpan.FromSeconds(60);
+                options.QueueLimit = 0;
             });
         });
     }
@@ -87,6 +153,7 @@ internal class Program
     /// <param name="services">DIコンテナ</param>
     private static void RegisterTokenGenerator(IServiceCollection services)
     {
+        // トークン生成には機密情報を使うので、ここでのみ生成を行う。
         services
             .AddSingleton<IAccessTokenGenerator, AccessTokenGenerator>(services =>
             {
@@ -132,8 +199,9 @@ internal class Program
             .AddSingleton(services =>
             {
                 var userRepository = services.GetRequiredService<IUserRepository>();
+                var userAuthRepository = services.GetRequiredService<IUserAuthenticationRepository>();
                 var hasher = services.GetRequiredService<IHasher>();
-                return new UserUseCase(userRepository, hasher);
+                return new UserUseCase(userRepository, userAuthRepository, hasher);
             })
             .AddSingleton(services =>
             {
