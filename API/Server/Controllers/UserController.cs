@@ -1,6 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Server.Authentications;
+using Server.Models.Users;
 using Server.UseCases;
 using Server.UseCases.Users;
 
@@ -21,7 +23,7 @@ public class UserController(ILogger<UserController> logger, UserUseCase userUseC
     public async Task<IActionResult> RegisterAsync(RegisterParams param)
     {
         // 登録ユースケースを実行
-        var (resultTypes, validationResult) = await _userUseCase.RegisterUserAsync(param.Name, param.SignInId, param.Password);
+        var (resultTypes, validationResult) = await _userUseCase.RegisterUserAsync(UserId.CreateNew(), param.Name, DateTime.Now, param.SignInId, param.Password);
         if (resultTypes is ResultTypes.Success)
         {
             return Ok();

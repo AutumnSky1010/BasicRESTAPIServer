@@ -9,5 +9,5 @@ public interface IUserAuthenticationRepository
     /// </summary>
     /// <param name="signInId">サインインID</param>
     /// <returns>成功したか、見つけたユーザID、見つけたパスワード</returns>
-    Task<(bool ok, UserId userId, StoredPassword storedPassword)> TryFindAuthentication(SignInId signInId);
+    Task<(bool ok, UserId userId, StoredPassword storedPassword)> TryFindAuthenticationAsync(SignInId signInId);
 }

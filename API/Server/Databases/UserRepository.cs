@@ -62,7 +62,7 @@ public class UserRepository(ILogger<UserRepository> logger, string connectionStr
         {
             var userRow = await _userClient.ReadUserByIdAsync(connection, targetUserId.Value);
             _ = UserName.TryCreate(userRow.Name, out var userName);
-            var user = User.CreateFrom(targetUserId, userName!, userRow.RegisteredAt);
+            var user = User.Create(targetUserId, userName!, userRow.RegisteredAt);
             return (true, user);
         }
         catch (Exception exception)

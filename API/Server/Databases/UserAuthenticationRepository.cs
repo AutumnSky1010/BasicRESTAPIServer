@@ -17,7 +17,7 @@ public class UserAuthenticationRepository(ILogger<UserAuthenticationRepository> 
     /// </summary>
     /// <param name="signInId">サインインID</param>
     /// <returns>成功したか、見つけたユーザID、見つけたパスワード</returns>
-    public async Task<(bool ok, UserId userId, StoredPassword storedPassword)> TryFindAuthentication(SignInId signInId)
+    public async Task<(bool ok, UserId userId, StoredPassword storedPassword)> TryFindAuthenticationAsync(SignInId signInId)
     {
         using var connection = new SqlConnection(connectionString);
 

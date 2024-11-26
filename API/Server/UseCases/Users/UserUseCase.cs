@@ -1,4 +1,4 @@
-using Server.Models.UserAuthentications;
+﻿using Server.Models.UserAuthentications;
 using Server.Models.Users;
 using Server.UseCases.UserAuthentications;
 
@@ -16,11 +16,18 @@ public class UserUseCase(IUserRepository userRepository, IUserAuthenticationRepo
     /// <summary>
     /// ユーザ登録ユースケース
     /// </summary>
+    /// <param name="userId">ユーザID</param>
     /// <param name="userNameValue">ユーザ名</param>
+    /// <param name="registeredAt">登録日時</param>
     /// <param name="signInIdValue">サインインID</param>
     /// <param name="rawPasswordValue">生パスワード</param>
     /// <returns>(ユースケース実行結果、入力値バリデーション結果)</returns>
-    public async Task<(ResultTypes resultTypes, RegisterValidationResult validationResult)> RegisterUserAsync(string userNameValue, string signInIdValue, string rawPasswordValue)
+    public async Task<(ResultTypes resultTypes, RegisterValidationResult validationResult)> RegisterUserAsync(
+        UserId userId,
+        string userNameValue,
+        DateTime registeredAt,
+        string signInIdValue,
+        string rawPasswordValue)
     {
         // 入力値のバリデーションを行う。
         if (!UserName.TryCreate(userNameValue, out var userName))
@@ -48,7 +55,7 @@ public class UserUseCase(IUserRepository userRepository, IUserAuthenticationRepo
         }
 
         // サインインIDが既に登録されているかをチェックする
-        var (existsId, _, _) = await _authRepository.TryFindAuthentication(signInId);
+        var (existsId, _, _) = await _authRepository.TryFindAuthenticationAsync(signInId);
         if (existsId)
         {
             var validationResult = new RegisterValidationResult(true, false, true);
@@ -59,7 +66,7 @@ public class UserUseCase(IUserRepository userRepository, IUserAuthenticationRepo
         var validParamResult = new RegisterValidationResult(true, true, true);
 
         // ユーザを作成し、DBに格納する。
-        var user = User.CreateNew(userName);
+        var user = User.Create(userId, userName, registeredAt);
         var hashedPassword = HashedPassword.HashFromRawPassword(_hasher, rawPassword, user);
         var ok = await _userRepository.TryCreateUserAsync(user, signInId, hashedPassword);
         if (ok)
