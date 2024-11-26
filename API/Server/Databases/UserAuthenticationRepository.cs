@@ -31,7 +31,7 @@ public class UserAuthenticationRepository(ILogger<UserAuthenticationRepository> 
         catch (Exception exception)
         {
             // 例外を出力する。
-            _logger.LogError(exception, "パスワードの取得に失敗しました。");
+            _logger.LogError(exception, "ユーザID・パスワードの取得に失敗しました。");
             return (false, UserId.Empty, StoredPassword.Empty);
         }
     }
