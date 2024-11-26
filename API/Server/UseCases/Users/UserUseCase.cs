@@ -1,4 +1,4 @@
-﻿using Server.Models.UserAuthentications;
+using Server.Models.UserAuthentications;
 using Server.Models.Users;
 using Server.UseCases.UserAuthentications;
 
@@ -72,5 +72,25 @@ public class UserUseCase(IUserRepository userRepository, IUserAuthenticationRepo
             // DBに格納する処理で失敗した場合は内部エラーとして扱う。
             return (ResultTypes.InternalError, validParamResult);
         }
+    }
+
+    /// <summary>
+    /// ユーザを取得するユースケース
+    /// </summary>
+    /// <param name="userIdValue">ユーザID</param>
+    /// <returns>結果、ユーザ名</returns>
+    public async Task<(ResultTypes result, User user)> GetUserAsync(Guid userIdValue)
+    {
+        var userId = new UserId(userIdValue);
+
+        // ユーザを取得し、ユーザ名を返す
+        var (ok, user) = await _userRepository.TryFindUserByIdAsync(userId);
+        if (ok)
+        {
+            return (ResultTypes.Success, user);
+        }
+
+        // ユーザが見つからなかった場合は内部エラーの可能性が高い
+        return (ResultTypes.InternalError, user);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Server.UseCases;
@@ -35,5 +35,21 @@ public class UserController(ILogger<UserController> logger, UserUseCase userUseC
 
         var validationResultResponse = new RegisterValidationResponse(validationResult.UserNameOk, validationResult.SignInIdOk, validationResult.RawPasswordOk);
         return BadRequest(validationResultResponse);
+    }
+
+    public record GetUserResponse(string Name);
+    [HttpGet]
+    public async Task<IActionResult> GetUserAsync()
+    {
+        var userId = AccessTokenGenerator.ParseUserId(Request);
+        var (resultTypes, user) = await _userUseCase.GetUserAsync(userId);
+
+        if (resultTypes is ResultTypes.Success)
+        {
+            return Ok(new GetUserResponse(user.Name.Value));
+        }
+
+        _logger.LogError("ユーザ取得時にサーバ内エラーが発生しました");
+        return StatusCode(500, "Internal Server Error");
     }
 }
