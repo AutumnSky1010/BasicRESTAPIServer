@@ -45,4 +45,19 @@ public class User
     {
         return new(new(Guid.NewGuid()), userName, DateTime.Now);
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is User user)
+        {
+            return user.Id == Id;
+        }
+
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
 }
