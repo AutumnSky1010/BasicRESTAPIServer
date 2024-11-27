@@ -79,6 +79,19 @@ internal class Program
             });
         });
 
+        // CORSを利用
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(
+                builder =>
+                {
+                    builder.WithOrigins(ServerEnvironments.Get(VariableTypes.CORSOriginURL))
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                });
+        });
+
         // カラム名のアンダースコアを無視する。こうすることでキャメルケースでもマップできる。
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
