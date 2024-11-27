@@ -74,7 +74,7 @@ internal class Program
                             Type=ReferenceType.SecurityScheme, Id="Bearer"
                         }
                     },
-                    Array.Empty<string>()
+                    []
                 }
             });
         });
@@ -105,8 +105,6 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
-        app.UseHttpsRedirection();
 
         // 認証
         app.UseAuthentication();
