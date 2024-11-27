@@ -48,7 +48,7 @@ public class TestUserUseCase
 
         // Assert
         // パスワードハッシュ化メソッドを呼び出しているかをテストする。
-        hasher.Verify(hasher => hasher.Generate(user, rawPassword!));
+        hasher.Verify(hasher => hasher.Generate(user, rawPassword));
         // リポジトリのユーザ作成メソッドが呼び出されている。
         userRepository.Verify(repo =>
             repo.TryCreateUserAsync(user, expectedSignInId, expectedHashedPassword),
