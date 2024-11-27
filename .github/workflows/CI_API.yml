@@ -1,0 +1,34 @@
+name: Build and Test
+
+on:
+  pull_request:
+  push: 
+    branches: ["main"]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest  
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: .NET 8 をインストール
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    
+    - name: リストアする
+      run: dotnet restore API/Server/Server.csproj; dotnet restore API/ServerTests/ServerTests.csproj
+
+    - name: API本体をビルドする
+      run: dotnet build API/Server/Server.csproj --no-restore --warnaserror
+
+    - name: テストプロジェクトをビルドする
+      run: dotnet build API/ServerTests/ServerTests.csproj --no-restore
+
+    - name: テストを実行
+      run: dotnet test API/API.sln /p:Configuration=Release
