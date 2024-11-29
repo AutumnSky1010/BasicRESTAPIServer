@@ -1,0 +1,39 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - production
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウトする。
+        uses: actions/checkout@v4
+        
+      - name: Azure CLI経由でログインする。
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: イメージをビルドしてAzure Container Registoryにプッシュする。
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - run: |
+          docker build ./API -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/apiserver:${{ github.sha }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/apiserver:${{ github.sha }}
+
+      # https://learn.microsoft.com/ja-jp/azure/devops/pipelines/tasks/reference/azure-container-apps-v1?view=azure-pipelines
+      - name: Azure Container Appsへデプロイする。
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          acrName: apiserver
+          imageToDeploy: ${{ secrets.REGISTRY_LOGIN_SERVER }}/apiserver:${{ github.sha }}
+          resourceGroup: basic-rest-api-server
+          containerAppName: 'basic-api'
+          location: 'Japan East'
