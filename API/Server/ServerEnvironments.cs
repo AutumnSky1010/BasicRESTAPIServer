@@ -26,10 +26,6 @@ public enum VariableTypes
     /// JWTの受信者情報(基本的にURI形式)
     /// </summary>
     JWTAudience,
-    /// <summary>
-    /// CORSで許可するオリジン(クライアント側のオリジン)
-    /// </summary>
-    CORSOriginURL,
 }
 
 public class ServerEnvironments
@@ -51,7 +47,6 @@ public class ServerEnvironments
             VariableTypes.JWTKeyForRefreshToken => "JWT_KEY_REFRESH_TOKEN",
             VariableTypes.JWTKeyForAccessToken => "JWT_KEY_ACCESS_TOKEN",
             VariableTypes.JWTAudience => "JWT_AUDIENCE",
-            VariableTypes.CORSOriginURL => "CORS_ORIGIN",
             _ => throw new ArgumentOutOfRangeException(nameof(type), $"環境変数名の設定を忘れています: {type}")
         };
 

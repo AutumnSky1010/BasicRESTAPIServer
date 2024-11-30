@@ -34,7 +34,6 @@ services:
       - JWT_AUDIENCE=クライアント側を登録
       - JWT_ISSURER=localhost:8080
       - JWT_KEY_ACCESS_TOKEN=The_encryption_algorithm_'HS256'_requires_a_key_size_of_at_least_'128'_bits.
-      - CORS_ORIGIN=クライアントのオリジンを登録
     command: dotnet watch run --project /api_src/Server/Server.csproj --launch-profile http
 volumes:
   ignores:
